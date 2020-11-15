@@ -8,7 +8,7 @@ const CenteredContainer = styled.div`
   height: 100vh;
 `;
 
-const TicTacToeBoard = styled.div`
+const TicTacToeBoardContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -41,6 +41,24 @@ const BOARD_MARKER = {
   O: 'o',
 };
 
+class TicTacToeBoard extends React.Component {
+  render() {
+    const { board } = this.props;
+
+    return (
+      <TicTacToeBoardContainer>
+        {board.map((row, rowIndex) => (
+          <TicTacToeBoardRow key={rowIndex}>
+            {row.map((square, squareIndex) => (
+              <TicTacToeBoardSquare key={squareIndex}>{square}</TicTacToeBoardSquare>
+            ))}
+          </TicTacToeBoardRow>
+        ))}
+      </TicTacToeBoardContainer>
+    );
+  }
+}
+
 class App extends React.Component {
 
   constructor(props) {
@@ -60,15 +78,7 @@ class App extends React.Component {
 
   return (
     <CenteredContainer>
-      <TicTacToeBoard>
-        {board.map((row, rowIndex) => (
-          <TicTacToeBoardRow key={rowIndex}>
-            {row.map((square, squareIndex) => (
-              <TicTacToeBoardSquare key={squareIndex}>{square}</TicTacToeBoardSquare>
-            ))}
-          </TicTacToeBoardRow>
-        ))}
-      </TicTacToeBoard>
+      <TicTacToeBoard board={board} />
     </CenteredContainer>
   );
   }

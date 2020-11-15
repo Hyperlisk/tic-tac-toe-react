@@ -1,13 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const CenteredContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-`;
-
 const TicTacToeBoardContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -74,13 +67,9 @@ class App extends React.Component {
   }
 
   render() {
-   const { board } = this.state;
+    const { board } = this.state;
 
-  return (
-    <CenteredContainer>
-      <TicTacToeBoard board={board} />
-    </CenteredContainer>
-  );
+    return <TicTacToeBoard board={board} />;
   }
 }
 

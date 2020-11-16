@@ -198,6 +198,32 @@ class App extends React.Component {
     return this.state.firstPlayer;
   }
 
+  selectSquare(selectedRowIndex, selectedColIndex) {
+    const { board, playerTurn } = this.state;
+
+    const marker = playerTurn === this.getXPlayer() ? BOARD_MARKER.X : BOARD_MARKER.O;
+    // Create a new board with new arrays containing the board state.
+    // We only replace the single square that was selected.
+    const updatedBoard = board.map(
+      (row, rowIndex) =>
+        row.map(
+          (square, squareIndex) => {
+            if (rowIndex === selectedRowIndex && squareIndex === selectedColIndex) {
+              return marker;
+            } else {
+              return square;
+            }
+          }
+        )
+      );
+
+    this.setState({
+      board: updatedBoard,
+      // Switch whose turn it is.
+      playerTurn: playerTurn === PLAYER.HUMAN ? PLAYER.COMPUTER : PLAYER.HUMAN,
+    });
+  }
+
   onDifficultySelected = difficultyLevel => {
     this.setState({
       // Move us to the first player selection screen.
@@ -237,22 +263,7 @@ class App extends React.Component {
       return;
     }
 
-    const marker = playerTurn === this.getXPlayer() ? BOARD_MARKER.X : BOARD_MARKER.O;
-
-    // Create a new board with new arrays containing the board state.
-    // We only replace the single square that was selected.
-    this.setState({
-      board: board.map(
-        (row, rowIndex) =>
-          row.map(
-            (square, squareIndex) =>
-              (rowIndex === selectedRowIndex && squareIndex === selectedColIndex ? marker : square
-          )
-        )
-      ),
-      // It was the human's turn. Now it's the computer's turn.
-      playerTurn: PLAYER.COMPUTER,
-    });
+    this.selectSquare(selectedRowIndex, selectedColIndex);
   };
 
   render() {

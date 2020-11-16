@@ -101,6 +101,7 @@ class DifficultySelection extends React.Component {
 
 const SCREENS = {
   DIFFICULTY_SELECTION: 0,
+  IN_GAME: 1,
 };
 
 class App extends React.Component {
@@ -116,18 +117,31 @@ class App extends React.Component {
 
   onDifficultySelected = difficultyLevel => {
     this.setState({
+      // Initialize an empty board.
+      board: [
+        [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
+        [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
+        [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
+      ],
+      // Move us to the actual game.
+      screen: SCREENS.IN_GAME,
       // Make sure we set the proper difficulty level that was selected.
       selectedDifficulty: difficultyLevel,
     });
   };
 
   render() {
-    const { screen } = this.state;
+    const { board, screen } = this.state;
 
     switch (screen) {
       case SCREENS.DIFFICULTY_SELECTION:
         return (
           <DifficultySelection onDifficultySelected={this.onDifficultySelected} />
+        );
+
+      case SCREENS.IN_GAME:
+        return (
+          <TicTacToeBoard board={board} />
         );
 
       default:

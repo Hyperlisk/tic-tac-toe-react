@@ -1,44 +1,12 @@
 import React from 'react';
-import styled from 'styled-components';
 
 import { BOARD_MARKER, DIFFICULTY, PLAYER } from './constants';
 import { ConfirmationButton, DisplayBanner, DisplayBannerContainer } from './shared';
 
 import { DifficultySelection } from './DifficultySelection';
+import { FirstPlayerSelection } from './FirstPlayerSelection';
 import { TicTacToeBoard } from './TicTacToeBoard';
 
-
-const FirstPlayerSelectionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-  height: 75vh;
-`;
-
-class FirstPlayerSelection extends React.Component {
-  onHumanClicked = () => {
-    this.props.onFirstPlayerSelected(PLAYER.HUMAN);
-  };
-
-  onComputerClicked = () => {
-    this.props.onFirstPlayerSelected(PLAYER.COMPUTER);
-  };
-
-  render() {
-    return (
-      <FirstPlayerSelectionContainer>
-        <h1>Select First Player</h1>
-        <ConfirmationButton onClick={this.onHumanClicked}>
-          Human
-        </ConfirmationButton>
-        <ConfirmationButton onClick={this.onComputerClicked}>
-          Computer
-        </ConfirmationButton>
-      </FirstPlayerSelectionContainer>
-    );
-  }
-}
 
 function makeOneOf(Math) {
   return function oneOf(list) {

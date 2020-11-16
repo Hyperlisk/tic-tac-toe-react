@@ -16,6 +16,15 @@ const TicTacToeBoardRow = styled.div`
   justify-content: space-evenly;
 `;
 
+function getTicTacToeBoardSquareCursor(props) {
+  if (props.playerTurn === PLAYER.HUMAN) {
+    return 'pointer';
+  }
+  if (props.playerTurn === PLAYER.COMPUTER) {
+    return 'default';
+  }
+  return 'auto';
+}
 const TicTacToeBoardSquare = styled.div`
   display: flex;
   align-items: center;
@@ -23,6 +32,7 @@ const TicTacToeBoardSquare = styled.div`
   width: 23vh;
   height: 23vh;
   border: 1px solid #000;
+  cursor: ${getTicTacToeBoardSquareCursor};
 `;
 
 const DifficultySelectionContainer = styled.div`
@@ -61,15 +71,43 @@ const BOARD_MARKER = {
 };
 
 class TicTacToeBoard extends React.Component {
+  onSquareSelected = e => {
+    const { playerTurn } = this.props;
+
+    if (playerTurn !== PLAYER.HUMAN) {
+      // Ignore any clicks when it's not the human's turn.
+      return;
+    }
+
+    const { dataset } = e.target;
+    const rowIndex = parseInt(dataset.row, 10);
+    const columnIndex = parseInt(dataset.column, 10);
+
+    if (isNaN(rowIndex) || isNaN(columnIndex)) {
+      // Something happened to our data, just do nothing.
+      return;
+    }
+
+    this.props.onSquareSelected(rowIndex, columnIndex);
+  };
+
   render() {
-    const { board } = this.props;
+    const { board, playerTurn } = this.props;
 
     return (
       <TicTacToeBoardContainer>
         {board.map((row, rowIndex) => (
           <TicTacToeBoardRow key={rowIndex}>
             {row.map((square, squareIndex) => (
-              <TicTacToeBoardSquare key={squareIndex}>{square}</TicTacToeBoardSquare>
+              <TicTacToeBoardSquare
+                key={squareIndex}
+                playerTurn={playerTurn}
+                onClick={this.onSquareSelected}
+                data-row={rowIndex}
+                data-column={squareIndex}
+              >
+                {square}
+              </TicTacToeBoardSquare>
             ))}
           </TicTacToeBoardRow>
         ))}
@@ -149,10 +187,15 @@ class App extends React.Component {
 
     this.state = {
       board: null,
+      firstPlayer: PLAYER.HUMAN,
       playerTurn: PLAYER.HUMAN,
       screen: SCREENS.DIFFICULTY_SELECTION,
       selectedDifficulty: DIFFICULTY.BEATABLE,
     };
+  }
+
+  getXPlayer() {
+    return this.state.firstPlayer;
   }
 
   onDifficultySelected = difficultyLevel => {
@@ -172,6 +215,8 @@ class App extends React.Component {
         [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
         [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
       ],
+      // Keep track of who is who is X.
+      firstPlayer: firstPlayer,
       // Set the current player's turn to be the one selected.
       playerTurn: firstPlayer,
       // Move us to the actual game.
@@ -179,8 +224,39 @@ class App extends React.Component {
     });
   };
 
+  onSquareSelected = (selectedRowIndex, selectedColIndex) => {
+    const { board, playerTurn } = this.state;
+
+    if (playerTurn !== PLAYER.HUMAN) {
+      // We only allow selecting squares on the human's turn. Ignore this one.
+      return;
+    }
+
+    if (board[selectedRowIndex][selectedColIndex] !== BOARD_MARKER._) {
+      // An invalid square was selected, just ignore it.
+      return;
+    }
+
+    const marker = playerTurn === this.getXPlayer() ? BOARD_MARKER.X : BOARD_MARKER.O;
+
+    // Create a new board with new arrays containing the board state.
+    // We only replace the single square that was selected.
+    this.setState({
+      board: board.map(
+        (row, rowIndex) =>
+          row.map(
+            (square, squareIndex) =>
+              (rowIndex === selectedRowIndex && squareIndex === selectedColIndex ? marker : square
+          )
+        )
+      ),
+      // It was the human's turn. Now it's the computer's turn.
+      playerTurn: PLAYER.COMPUTER,
+    });
+  };
+
   render() {
-    const { board, screen } = this.state;
+    const { board, playerTurn, screen } = this.state;
 
     switch (screen) {
       case SCREENS.DIFFICULTY_SELECTION:
@@ -195,7 +271,11 @@ class App extends React.Component {
 
       case SCREENS.IN_GAME:
         return (
-          <TicTacToeBoard board={board} />
+          <TicTacToeBoard
+            board={board}
+            playerTurn={playerTurn}
+            onSquareSelected={this.onSquareSelected}
+          />
         );
 
       default:

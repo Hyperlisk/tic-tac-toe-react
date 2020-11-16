@@ -72,7 +72,12 @@ const BOARD_MARKER = {
 
 class TicTacToeBoard extends React.Component {
   onSquareClicked = e => {
-    const { playerTurn } = this.props;
+    const { playerTurn, onSquareClicked } = this.props;
+
+    if (!onSquareClicked) {
+      // No handler, so nothing to handle.
+      return;
+    }
 
     if (playerTurn !== PLAYER.HUMAN) {
       // Ignore any clicks when it's not the human's turn.
@@ -88,7 +93,7 @@ class TicTacToeBoard extends React.Component {
       return;
     }
 
-    this.props.onSquareClicked(rowIndex, columnIndex);
+    onSquareClicked(rowIndex, columnIndex);
   };
 
   render() {
@@ -291,18 +296,50 @@ class ComputerPlayer extends React.Component {
   }
 }
 
+
+const WinnerDisplayContainer = styled.div`
+  position: relative;
+`;
+
+const WinnerDisplayBanner = styled.div`
+  background-color: rgba(0, 0, 0, 0.3);
+  font-size: 20vh;
+  text-align: center;
+  position: absolute;
+  height: 50vh;
+  top: calc(50% - 25vh);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+function WinnerDisplay(props) {
+  const { board, winner, onPlayAgainClicked } = props;
+  return (
+    <WinnerDisplayContainer>
+      <TicTacToeBoard board={board} playerTurn={winner} />
+      <WinnerDisplayBanner>
+        <div>{winner} wins!</div>
+        <ConfirmationButton onClick={onPlayAgainClicked}>Play Again</ConfirmationButton>
+      </WinnerDisplayBanner>
+    </WinnerDisplayContainer>
+  );
+}
+
 const SCREENS = {
   DIFFICULTY_SELECTION: 0,
   FIRST_PLAYER_SELECTION: 1,
   IN_GAME: 2,
+  DISPLAY_WINNER: 3,
 };
 
 class App extends React.Component {
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
+  getInitialState() {
+    return {
       board: null,
       firstPlayer: PLAYER.HUMAN,
       playerTurn: PLAYER.HUMAN,
@@ -311,8 +348,44 @@ class App extends React.Component {
     };
   }
 
+  constructor(props) {
+    super(props);
+
+    this.state = this.getInitialState();
+  }
+
   getXPlayer() {
     return this.state.firstPlayer;
+  }
+
+  checkForWin(board) {
+    const possibleWins = [
+      [[0, 0], [0, 1], [0, 2]],
+      [[1, 0], [1, 1], [1, 2]],
+      [[2, 0], [2, 1], [2, 2]],
+      [[0, 0], [1, 0], [2, 0]],
+      [[0, 1], [1, 1], [2, 1]],
+      [[0, 2], [1, 2], [2, 2]],
+      [[0, 0], [1, 1], [2, 2]],
+      [[2, 0], [1, 1], [0, 2]],
+    ];
+    for (let i = 0;i < possibleWins.length;i++) {
+      const [
+        [rowA, colA],
+        [rowB, colB],
+        [rowC, colC],
+      ] = possibleWins[i];
+      const maybeWinner = board[rowA][colA];
+      if (maybeWinner === BOARD_MARKER._) {
+        // Not a player, so not a win. Keep looking.
+        continue;
+      }
+      if (maybeWinner === board[rowB][colB] && maybeWinner === board[rowC][colC]) {
+        // This player also has the other necessary squares. They won!
+        return maybeWinner;
+      }
+    }
+    return BOARD_MARKER._;
   }
 
   selectSquare(selectedRowIndex, selectedColIndex) {
@@ -333,11 +406,22 @@ class App extends React.Component {
           }
         )
       );
+    const winningPlayer = this.checkForWin(updatedBoard);
+    // If we have a winner move to the display winner screen.
+    const nextScreen = winningPlayer !== BOARD_MARKER._ ? SCREENS.DISPLAY_WINNER : SCREENS.IN_GAME;
 
     this.setState({
       board: updatedBoard,
-      // Switch whose turn it is.
-      playerTurn: playerTurn === PLAYER.HUMAN ? PLAYER.COMPUTER : PLAYER.HUMAN,
+      // Switch whose turn it is, unless there was a winner.
+      playerTurn:
+        winningPlayer === BOARD_MARKER._
+          // There is no winner yet, switch turns.
+          ? playerTurn === PLAYER.HUMAN
+            ? PLAYER.COMPUTER
+            : PLAYER.HUMAN
+          // There is a winner, do not change whose turn it is.
+          : playerTurn,
+      screen: nextScreen,
     });
   }
 
@@ -399,6 +483,10 @@ class App extends React.Component {
     this.selectSquare(selectedRowIndex, selectedColIndex);
   };
 
+  onPlayAgainClicked = () => {
+    this.setState(this.getInitialState());
+  };
+
   render() {
     const { board, playerTurn, screen, selectedDifficulty } = this.state;
 
@@ -431,6 +519,15 @@ class App extends React.Component {
               />
             )}
           </>
+        );
+
+      case SCREENS.DISPLAY_WINNER:
+        return (
+          <WinnerDisplay
+            board={board}
+            winner={playerTurn}
+            onPlayAgainClicked={this.onPlayAgainClicked}
+          />
         );
 
       default:

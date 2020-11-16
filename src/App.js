@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { BOARD_MARKER, DIFFICULTY, PLAYER } from './constants';
 import { ConfirmationButton, DisplayBanner, DisplayBannerContainer } from './shared';
 
 
@@ -56,15 +57,6 @@ const FirstPlayerSelectionContainer = styled.div`
   height: 75vh;
 `;
 
-const BOARD_MARKER = {
-  // Nothing played in the space.
-  _: ' ',
-  // X played in the space.
-  X: 'X',
-  // O played in the space.
-  O: 'O',
-};
-
 class TicTacToeBoard extends React.Component {
   onSquareClicked = e => {
     const { playerTurn, onSquareClicked } = this.props;
@@ -116,11 +108,6 @@ class TicTacToeBoard extends React.Component {
   }
 }
 
-const DIFFICULTY = {
-  BEATABLE: 0,
-  UNBEATABLE: 1,
-};
-
 class DifficultySelection extends React.Component {
   onBeatableClicked = () => {
     this.props.onDifficultySelected(DIFFICULTY.BEATABLE);
@@ -144,11 +131,6 @@ class DifficultySelection extends React.Component {
     );
   }
 }
-
-const PLAYER = {
-  HUMAN: 0,
-  COMPUTER: 1,
-};
 
 class FirstPlayerSelection extends React.Component {
   onHumanClicked = () => {

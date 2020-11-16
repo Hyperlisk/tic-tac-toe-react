@@ -2,19 +2,12 @@ import React from 'react';
 
 import { BOARD_MARKER, DIFFICULTY, PLAYER } from './constants';
 import { ConfirmationButton, DisplayBanner, DisplayBannerContainer } from './shared';
+import { oneOf } from './utils';
 
 import { DifficultySelection } from './DifficultySelection';
 import { FirstPlayerSelection } from './FirstPlayerSelection';
 import { TicTacToeBoard } from './TicTacToeBoard';
 
-
-function makeOneOf(Math) {
-  return function oneOf(list) {
-    return list[Math.floor(Math.random() * list.length)];
-  };
-}
-
-const oneOf = makeOneOf(Math);
 
 function selectSquareForBeatableDifficulty(board, marker) {
   // Try and stay out of the human's way.

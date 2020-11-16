@@ -71,7 +71,7 @@ const BOARD_MARKER = {
 };
 
 class TicTacToeBoard extends React.Component {
-  onSquareSelected = e => {
+  onSquareClicked = e => {
     const { playerTurn } = this.props;
 
     if (playerTurn !== PLAYER.HUMAN) {
@@ -88,7 +88,7 @@ class TicTacToeBoard extends React.Component {
       return;
     }
 
-    this.props.onSquareSelected(rowIndex, columnIndex);
+    this.props.onSquareClicked(rowIndex, columnIndex);
   };
 
   render() {
@@ -102,7 +102,7 @@ class TicTacToeBoard extends React.Component {
               <TicTacToeBoardSquare
                 key={squareIndex}
                 playerTurn={playerTurn}
-                onClick={this.onSquareSelected}
+                onClick={this.onSquareClicked}
                 data-row={rowIndex}
                 data-column={squareIndex}
               >
@@ -171,6 +171,123 @@ class FirstPlayerSelection extends React.Component {
         </ConfirmationButton>
       </FirstPlayerSelectionContainer>
     );
+  }
+}
+
+function makeOneOf(Math) {
+  return function oneOf(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  };
+}
+
+const oneOf = makeOneOf(Math);
+
+function selectSquareForBeatableDifficulty(board, marker) {
+  // Try and stay out of the human's way.
+  // If no space has been played yet, pick a "wall" because that gives the least
+  // opportunity to win.
+  const isEmptyBoard = board.every(row => row.every(col => col === BOARD_MARKER._));
+  if (isEmptyBoard) {
+    // Squares not in the corner and not in the center.
+    return oneOf([[0, 1], [1, 0], [1, 2], [2, 1]]);
+  }
+
+  // Try and stay out of the human's way as much as possible.
+  const isHumanMarker = testMarker => testMarker !== BOARD_MARKER._ && testMarker !== marker;
+  const wouldBlockHuman = (board, rowIndex, colIndex) => {
+    // Check each direction from this square to make sure it's not in the line of a human square.
+    const squaresToCheck = [
+      [rowIndex - 2, colIndex - 2],
+      [rowIndex - 1, colIndex - 1],
+      [rowIndex - 2, colIndex],
+      [rowIndex - 1, colIndex],
+      [rowIndex - 1, colIndex + 1],
+      [rowIndex - 2, colIndex + 2],
+      [rowIndex, colIndex - 2],
+      [rowIndex, colIndex - 1],
+      [rowIndex, colIndex + 2],
+      [rowIndex, colIndex + 1],
+      [rowIndex + 1, colIndex - 1],
+      [rowIndex + 2, colIndex - 2],
+      [rowIndex + 2, colIndex],
+      [rowIndex + 1, colIndex],
+      [rowIndex + 1, colIndex + 1],
+      [rowIndex + 2, colIndex + 2],
+    ];
+    return squaresToCheck.some(([testRowIndex, testColIndex]) => {
+      const row = board[testRowIndex];
+      if (row === undefined) {
+        // Thinking about a square that is out of bounds, ignore it.
+        return false;
+      }
+      const square = row[testColIndex];
+      if (square === undefined) {
+        // Thinking about a square that is out of bounds, ignore it.
+        return false;
+      }
+      return isHumanMarker(square);
+    });
+  };
+  const open = [];
+  const unblocking = [];
+  board.forEach((row, rowIndex) => {
+    row.forEach((col, colIndex) => {
+      const marker = board[rowIndex][colIndex];
+      if (marker === BOARD_MARKER._) {
+        open.push([rowIndex, colIndex]);
+        if (!wouldBlockHuman(board, rowIndex, colIndex)) {
+          unblocking.push([rowIndex, colIndex]);
+        }
+      }
+    });
+  });
+
+  if (unblocking.length !== 0) {
+    return oneOf(unblocking);
+  }
+
+  // We can't really stay out of the way so just pick a random spot.
+  return oneOf(open);
+}
+
+function selectSquareForUnbeatableDifficulty(board, marker) {
+  return [0, 0];
+}
+
+function selectSquareForDifficulty(difficulty, board, marker) {
+  switch (difficulty) {
+    case DIFFICULTY.BEATABLE:
+      return selectSquareForBeatableDifficulty(board, marker);
+
+    case DIFFICULTY.UNBEATABLE:
+      return selectSquareForUnbeatableDifficulty(board, marker);
+
+    default:
+      throw new Error(`Unkown difficulty: ${difficulty}`);
+  }
+}
+
+class ComputerPlayer extends React.Component {
+  // Inject global dependencies rather than just using them.
+  // This lets us test much easier despite jest already having some facilities.
+  static defaultProps = {
+    selectSquareForDifficulty: selectSquareForDifficulty,
+    setTimeout: setTimeout,
+  };
+
+  componentDidMount() {
+    const { board, difficulty, marker, selectSquareForDifficulty, setTimeout, onSquareSelected } = this.props;
+    setTimeout(
+      () => {
+        const [rowIndex, colIndex] = selectSquareForDifficulty(difficulty, board, marker);
+        onSquareSelected(rowIndex, colIndex);
+      },
+      2000
+    );
+  }
+
+  render() {
+    return null;
   }
 }
 
@@ -250,7 +367,7 @@ class App extends React.Component {
     });
   };
 
-  onSquareSelected = (selectedRowIndex, selectedColIndex) => {
+  onHumanSquareSelected = (selectedRowIndex, selectedColIndex) => {
     const { board, playerTurn } = this.state;
 
     if (playerTurn !== PLAYER.HUMAN) {
@@ -266,8 +383,24 @@ class App extends React.Component {
     this.selectSquare(selectedRowIndex, selectedColIndex);
   };
 
+  onComputerSquareSelected = (selectedRowIndex, selectedColIndex) => {
+    const { board, playerTurn } = this.state;
+
+    if (playerTurn !== PLAYER.COMPUTER) {
+      // Something weird has happend. Ignore this one.
+      return;
+    }
+
+    if (board[selectedRowIndex][selectedColIndex] !== BOARD_MARKER._) {
+      // An invalid square was selected, throw an error because something has gone very wrong.
+      throw new Error('The computer picked a bad square somehow.');
+    }
+
+    this.selectSquare(selectedRowIndex, selectedColIndex);
+  };
+
   render() {
-    const { board, playerTurn, screen } = this.state;
+    const { board, playerTurn, screen, selectedDifficulty } = this.state;
 
     switch (screen) {
       case SCREENS.DIFFICULTY_SELECTION:
@@ -281,12 +414,23 @@ class App extends React.Component {
         );
 
       case SCREENS.IN_GAME:
+        const currentPlayerMarker = playerTurn === this.getXPlayer() ? BOARD_MARKER.X : BOARD_MARKER.O;
         return (
-          <TicTacToeBoard
-            board={board}
-            playerTurn={playerTurn}
-            onSquareSelected={this.onSquareSelected}
-          />
+          <>
+            <TicTacToeBoard
+              board={board}
+              playerTurn={playerTurn}
+              onSquareClicked={this.onHumanSquareSelected}
+            />
+            {playerTurn === PLAYER.COMPUTER && (
+              <ComputerPlayer
+                board={board}
+                difficulty={selectedDifficulty}
+                marker={currentPlayerMarker}
+                onSquareSelected={this.onComputerSquareSelected}
+              />
+            )}
+          </>
         );
 
       default:

@@ -623,10 +623,12 @@ class App extends React.Component {
         );
 
       case SCREENS.DISPLAY_WINNER:
+        const winner = playerTurn === this.getXPlayer() ? BOARD_MARKER.X : BOARD_MARKER.O;
         return (
           <WinnerDisplay
             board={board}
-            winner={playerTurn}
+            playerTurn={playerTurn}
+            winner={winner}
             onPlayAgainClicked={this.onPlayAgainClicked}
           />
         );

@@ -5,8 +5,8 @@ const TicTacToeBoardContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  width: 75vh;
-  height: 75vh;
+  width: 90vh;
+  height: 90vh;
   border: 1px solid #000;
 `;
 
@@ -378,11 +378,11 @@ class ComputerPlayer extends React.Component {
 }
 
 
-const WinnerDisplayContainer = styled.div`
+const DisplayBannerContainer = styled.div`
   position: relative;
 `;
 
-const WinnerDisplayBanner = styled.div`
+const DisplayBanner = styled.div`
   background-color: rgba(0, 0, 0, 0.3);
   font-size: 20vh;
   text-align: center;
@@ -400,13 +400,26 @@ const WinnerDisplayBanner = styled.div`
 function WinnerDisplay(props) {
   const { board, winner, onPlayAgainClicked } = props;
   return (
-    <WinnerDisplayContainer>
+    <DisplayBannerContainer>
       <TicTacToeBoard board={board} playerTurn={winner} />
-      <WinnerDisplayBanner>
+      <DisplayBanner>
         <div>{winner} wins!</div>
         <ConfirmationButton onClick={onPlayAgainClicked}>Play Again</ConfirmationButton>
-      </WinnerDisplayBanner>
-    </WinnerDisplayContainer>
+      </DisplayBanner>
+    </DisplayBannerContainer>
+  );
+}
+
+function StalemateDisplay(props) {
+  const { board, playerTurn, onPlayAgainClicked } = props;
+  return (
+    <DisplayBannerContainer>
+      <TicTacToeBoard board={board} playerTurn={playerTurn} />
+      <DisplayBanner>
+        <div>Stalemate!</div>
+        <ConfirmationButton onClick={onPlayAgainClicked}>Play Again</ConfirmationButton>
+      </DisplayBanner>
+    </DisplayBannerContainer>
   );
 }
 
@@ -415,6 +428,7 @@ const SCREENS = {
   FIRST_PLAYER_SELECTION: 1,
   IN_GAME: 2,
   DISPLAY_WINNER: 3,
+  DISPLAY_STALEMATE: 4,
 };
 
 class App extends React.Component {
@@ -488,8 +502,14 @@ class App extends React.Component {
         )
       );
     const winningPlayer = this.checkForWin(updatedBoard);
+    const hasStalemate = updatedBoard.every(row => row.every(marker => marker !== BOARD_MARKER._));
     // If we have a winner move to the display winner screen.
-    const nextScreen = winningPlayer !== BOARD_MARKER._ ? SCREENS.DISPLAY_WINNER : SCREENS.IN_GAME;
+    const nextScreen =
+      winningPlayer !== BOARD_MARKER._
+        ? SCREENS.DISPLAY_WINNER
+        : hasStalemate
+          ? SCREENS.DISPLAY_STALEMATE
+          : SCREENS.IN_GAME;
 
     this.setState({
       board: updatedBoard,
@@ -607,6 +627,15 @@ class App extends React.Component {
           <WinnerDisplay
             board={board}
             winner={playerTurn}
+            onPlayAgainClicked={this.onPlayAgainClicked}
+          />
+        );
+
+      case SCREENS.DISPLAY_STALEMATE:
+        return (
+          <StalemateDisplay
+            board={board}
+            playerTurn={playerTurn}
             onPlayAgainClicked={this.onPlayAgainClicked}
           />
         );

@@ -256,7 +256,88 @@ function selectSquareForBeatableDifficulty(board, marker) {
 }
 
 function selectSquareForUnbeatableDifficulty(board, marker) {
-  return [0, 0];
+  // Do the opposite of the beatable difficulty. Get in the human's way.
+  debugger;
+  // Pick the center if it's available.
+  if (board[1][1] === BOARD_MARKER._) {
+    return [1, 1];
+  }
+
+  const isHumanMarker = testMarker => testMarker !== BOARD_MARKER._ && testMarker !== marker;
+  // Check if we can win, or of we need to block our opponent.
+  const possibleWins = [
+    [[0, 0], [0, 1], [0, 2]],
+    [[1, 0], [1, 1], [1, 2]],
+    [[2, 0], [2, 1], [2, 2]],
+    [[0, 0], [1, 0], [2, 0]],
+    [[0, 1], [1, 1], [2, 1]],
+    [[0, 2], [1, 2], [2, 2]],
+    [[0, 0], [1, 1], [2, 2]],
+    [[2, 0], [1, 1], [0, 2]],
+  ];
+  for (let i = 0;i < possibleWins.length;i++) {
+    const [
+      [rowA, colA],
+      [rowB, colB],
+      [rowC, colC],
+    ] = possibleWins[i];
+    const openSpaces = Number(board[rowA][colA] === BOARD_MARKER._) + Number(board[rowB][colB] === BOARD_MARKER._) + Number(board[rowC][colC] === BOARD_MARKER._)
+    const mySpaces = Number(board[rowA][colA] === marker) + Number(board[rowB][colB] === marker) + Number(board[rowC][colC] === marker)
+    const opponentSpaces = Number(isHumanMarker(board[rowA][colA])) + Number(isHumanMarker(board[rowB][colB])) + Number(isHumanMarker(board[rowC][colC]))
+    if (openSpaces === 1 && (mySpaces === 2 || opponentSpaces === 2)) {
+      return possibleWins[i].filter(([row, col]) => board[row][col] === BOARD_MARKER._)[0];
+    }
+  }
+
+  // Try and block as much as possible.
+  const getBlockStrength = (board, rowIndex, colIndex) => {
+    const squaresToCheck = [
+      [rowIndex - 2, colIndex - 2],
+      [rowIndex - 1, colIndex - 1],
+      [rowIndex - 2, colIndex],
+      [rowIndex - 1, colIndex],
+      [rowIndex - 1, colIndex + 1],
+      [rowIndex - 2, colIndex + 2],
+      [rowIndex, colIndex - 2],
+      [rowIndex, colIndex - 1],
+      [rowIndex, colIndex + 2],
+      [rowIndex, colIndex + 1],
+      [rowIndex + 1, colIndex - 1],
+      [rowIndex + 2, colIndex - 2],
+      [rowIndex + 2, colIndex],
+      [rowIndex + 1, colIndex],
+      [rowIndex + 1, colIndex + 1],
+      [rowIndex + 2, colIndex + 2],
+    ];
+    return squaresToCheck.reduce(
+      (acc, [testRowIndex, testColIndex]) => {
+        const blocks = !!board[testRowIndex] && !!board[testRowIndex][testColIndex] && isHumanMarker(board[testRowIndex][testColIndex]);
+        return blocks ? acc + 1 : acc;
+      },
+      0
+    );
+  };
+
+  let open = [];
+  let maxStrength = 0;
+  board.forEach((row, rowIndex) => {
+    row.forEach((col, colIndex) => {
+      const marker = board[rowIndex][colIndex];
+      if (marker === BOARD_MARKER._) {
+        const blockingStrength = getBlockStrength(board, rowIndex, colIndex);
+        const entry = [rowIndex, colIndex];
+        if (blockingStrength > maxStrength) {
+          open = [entry];
+          maxStrength = blockingStrength;
+        } else if (blockingStrength === maxStrength) {
+          open.push(entry);
+        }
+      }
+    });
+  });
+
+  // Pick a random spot that block the most.
+  return oneOf(open);
 }
 
 function selectSquareForDifficulty(difficulty, board, marker) {

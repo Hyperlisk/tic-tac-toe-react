@@ -70,15 +70,28 @@ class TicTacToeBoard extends React.Component {
   }
 }
 
+const DIFFICULTY = {
+  BEATABLE: 0,
+  UNBEATABLE: 1,
+};
+
 class DifficultySelection extends React.Component {
+  onBeatableClicked = () => {
+    this.props.onDifficultySelected(DIFFICULTY.BEATABLE);
+  };
+
+  onUnbeatableClicked = () => {
+    this.props.onDifficultySelected(DIFFICULTY.UNBEATABLE);
+  };
+
   render() {
     return (
       <DifficultySelectionContainer>
         <h1>Select Difficulty</h1>
-        <DifficultyButton>
+        <DifficultyButton onClick={this.onBeatableClicked}>
           Beatable
         </DifficultyButton>
-        <DifficultyButton>
+        <DifficultyButton onClick={this.onUnbeatableClicked}>
           Unbeatable
         </DifficultyButton>
       </DifficultySelectionContainer>
@@ -97,8 +110,16 @@ class App extends React.Component {
 
     this.state = {
       screen: SCREENS.DIFFICULTY_SELECTION,
+      selectedDifficulty: DIFFICULTY.BEATABLE,
     };
   }
+
+  onDifficultySelected = difficultyLevel => {
+    this.setState({
+      // Make sure we set the proper difficulty level that was selected.
+      selectedDifficulty: difficultyLevel,
+    });
+  };
 
   render() {
     const { screen } = this.state;
@@ -106,7 +127,7 @@ class App extends React.Component {
     switch (screen) {
       case SCREENS.DIFFICULTY_SELECTION:
         return (
-          <DifficultySelection />
+          <DifficultySelection onDifficultySelected={this.onDifficultySelected} />
         );
 
       default:

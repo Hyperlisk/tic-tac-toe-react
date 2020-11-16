@@ -7,20 +7,8 @@ import { DifficultySelection } from './DifficultySelection';
 import { FirstPlayerSelection } from './FirstPlayerSelection';
 import { ConfirmationButton, DisplayBanner, DisplayBannerContainer } from './shared';
 import { TicTacToeBoard } from './TicTacToeBoard';
+import { WinnerDisplay } from './WinnerDisplay';
 
-
-function WinnerDisplay(props) {
-  const { board, winner, onPlayAgainClicked } = props;
-  return (
-    <DisplayBannerContainer>
-      <TicTacToeBoard board={board} playerTurn={winner} />
-      <DisplayBanner>
-        <div>{winner} wins!</div>
-        <ConfirmationButton onClick={onPlayAgainClicked}>Play Again</ConfirmationButton>
-      </DisplayBanner>
-    </DisplayBannerContainer>
-  );
-}
 
 function StalemateDisplay(props) {
   const { board, playerTurn, onPlayAgainClicked } = props;

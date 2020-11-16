@@ -33,7 +33,15 @@ const DifficultySelectionContainer = styled.div`
   height: 75vh;
 `;
 
-const DifficultyButton = styled.button`
+const FirstPlayerSelectionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 75vh;
+`;
+
+const ConfirmationButton = styled.button`
   border: 1px outset #33C;
   border-radius: 10px;
   background-color: #55E;
@@ -88,20 +96,50 @@ class DifficultySelection extends React.Component {
     return (
       <DifficultySelectionContainer>
         <h1>Select Difficulty</h1>
-        <DifficultyButton onClick={this.onBeatableClicked}>
+        <ConfirmationButton onClick={this.onBeatableClicked}>
           Beatable
-        </DifficultyButton>
-        <DifficultyButton onClick={this.onUnbeatableClicked}>
+        </ConfirmationButton>
+        <ConfirmationButton onClick={this.onUnbeatableClicked}>
           Unbeatable
-        </DifficultyButton>
+        </ConfirmationButton>
       </DifficultySelectionContainer>
+    );
+  }
+}
+
+const PLAYER = {
+  HUMAN: 0,
+  COMPUTER: 1,
+};
+
+class FirstPlayerSelection extends React.Component {
+  onHumanClicked = () => {
+    this.props.onFirstPlayerSelected(PLAYER.HUMAN);
+  };
+
+  onComputerClicked = () => {
+    this.props.onFirstPlayerSelected(PLAYER.COMPUTER);
+  };
+
+  render() {
+    return (
+      <FirstPlayerSelectionContainer>
+        <h1>Select First Player</h1>
+        <ConfirmationButton onClick={this.onHumanClicked}>
+          Human
+        </ConfirmationButton>
+        <ConfirmationButton onClick={this.onComputerClicked}>
+          Computer
+        </ConfirmationButton>
+      </FirstPlayerSelectionContainer>
     );
   }
 }
 
 const SCREENS = {
   DIFFICULTY_SELECTION: 0,
-  IN_GAME: 1,
+  FIRST_PLAYER_SELECTION: 1,
+  IN_GAME: 2,
 };
 
 class App extends React.Component {
@@ -110,6 +148,8 @@ class App extends React.Component {
     super(props);
 
     this.state = {
+      board: null,
+      playerTurn: PLAYER.HUMAN,
       screen: SCREENS.DIFFICULTY_SELECTION,
       selectedDifficulty: DIFFICULTY.BEATABLE,
     };
@@ -117,16 +157,25 @@ class App extends React.Component {
 
   onDifficultySelected = difficultyLevel => {
     this.setState({
+      // Move us to the first player selection screen.
+      screen: SCREENS.FIRST_PLAYER_SELECTION,
+      // Make sure we set the proper difficulty level that was selected.
+      selectedDifficulty: difficultyLevel,
+    });
+  };
+
+  onFirstPlayerSelected = firstPlayer => {
+    this.setState({
       // Initialize an empty board.
       board: [
         [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
         [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
         [BOARD_MARKER._, BOARD_MARKER._, BOARD_MARKER._],
       ],
+      // Set the current player's turn to be the one selected.
+      playerTurn: firstPlayer,
       // Move us to the actual game.
       screen: SCREENS.IN_GAME,
-      // Make sure we set the proper difficulty level that was selected.
-      selectedDifficulty: difficultyLevel,
     });
   };
 
@@ -137,6 +186,11 @@ class App extends React.Component {
       case SCREENS.DIFFICULTY_SELECTION:
         return (
           <DifficultySelection onDifficultySelected={this.onDifficultySelected} />
+        );
+
+      case SCREENS.FIRST_PLAYER_SELECTION:
+        return (
+          <FirstPlayerSelection onFirstPlayerSelected={this.onFirstPlayerSelected} />
         );
 
       case SCREENS.IN_GAME:

@@ -33,6 +33,8 @@ const TicTacToeBoardSquare = styled.div`
   height: 23vh;
   border: 1px solid #000;
   cursor: ${getTicTacToeBoardSquareCursor};
+  font-size: 24vh;
+  font-family: arial;
 `;
 
 const DifficultySelectionContainer = styled.div`
@@ -65,9 +67,9 @@ const BOARD_MARKER = {
   // Nothing played in the space.
   _: ' ',
   // X played in the space.
-  X: 'x',
+  X: 'X',
   // O played in the space.
-  O: 'o',
+  O: 'O',
 };
 
 class TicTacToeBoard extends React.Component {
@@ -383,7 +385,8 @@ const DisplayBannerContainer = styled.div`
 `;
 
 const DisplayBanner = styled.div`
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 2555, 255, 0.9);
   font-size: 20vh;
   text-align: center;
   position: absolute;

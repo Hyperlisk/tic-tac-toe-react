@@ -4,16 +4,9 @@ import styled from 'styled-components';
 import { BOARD_MARKER, DIFFICULTY, PLAYER } from './constants';
 import { ConfirmationButton, DisplayBanner, DisplayBannerContainer } from './shared';
 
+import { DifficultySelection } from './DifficultySelection';
 import { TicTacToeBoard } from './TicTacToeBoard';
 
-
-const DifficultySelectionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-  height: 75vh;
-`;
 
 const FirstPlayerSelectionContainer = styled.div`
   display: flex;
@@ -22,30 +15,6 @@ const FirstPlayerSelectionContainer = styled.div`
   align-items: center;
   height: 75vh;
 `;
-
-class DifficultySelection extends React.Component {
-  onBeatableClicked = () => {
-    this.props.onDifficultySelected(DIFFICULTY.BEATABLE);
-  };
-
-  onUnbeatableClicked = () => {
-    this.props.onDifficultySelected(DIFFICULTY.UNBEATABLE);
-  };
-
-  render() {
-    return (
-      <DifficultySelectionContainer>
-        <h1>Select Difficulty</h1>
-        <ConfirmationButton onClick={this.onBeatableClicked}>
-          Beatable
-        </ConfirmationButton>
-        <ConfirmationButton onClick={this.onUnbeatableClicked}>
-          Unbeatable
-        </ConfirmationButton>
-      </DifficultySelectionContainer>
-    );
-  }
-}
 
 class FirstPlayerSelection extends React.Component {
   onHumanClicked = () => {

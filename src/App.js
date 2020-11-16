@@ -5,23 +5,10 @@ import { BOARD_MARKER, DIFFICULTY, PLAYER } from './constants';
 
 import { DifficultySelection } from './DifficultySelection';
 import { FirstPlayerSelection } from './FirstPlayerSelection';
-import { ConfirmationButton, DisplayBanner, DisplayBannerContainer } from './shared';
+import { StalemateDisplay } from './StalemateDisplay';
 import { TicTacToeBoard } from './TicTacToeBoard';
 import { WinnerDisplay } from './WinnerDisplay';
 
-
-function StalemateDisplay(props) {
-  const { board, playerTurn, onPlayAgainClicked } = props;
-  return (
-    <DisplayBannerContainer>
-      <TicTacToeBoard board={board} playerTurn={playerTurn} />
-      <DisplayBanner>
-        <div>Stalemate!</div>
-        <ConfirmationButton onClick={onPlayAgainClicked}>Play Again</ConfirmationButton>
-      </DisplayBanner>
-    </DisplayBannerContainer>
-  );
-}
 
 const SCREENS = {
   DIFFICULTY_SELECTION: 0,
